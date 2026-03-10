@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -17,9 +18,7 @@ main.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 main.BorderSizePixel = 0
 main.Parent = screenGui
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 14)
-mainCorner.Parent = main
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 
 local stroke = Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(90, 90, 140)
@@ -32,9 +31,7 @@ titleBar.BackgroundColor3 = Color3.fromRGB(32, 32, 44)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = main
 
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 14)
-titleCorner.Parent = titleBar
+Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 14)
 
 local fixMask = Instance.new("Frame")
 fixMask.Size = UDim2.new(1, 0, 0, 16)
@@ -71,9 +68,7 @@ local function createCard(text)
 	card.BorderSizePixel = 0
 	card.Parent = content
 
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
-	corner.Parent = card
+	Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
 
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(0.65, 0, 1, 0)
@@ -96,12 +91,9 @@ local function createCard(text)
 	toggle.Font = Enum.Font.GothamBold
 	toggle.Parent = card
 
-	local tCorner = Instance.new("UICorner")
-	tCorner.CornerRadius = UDim.new(0, 10)
-	tCorner.Parent = toggle
+	Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 10)
 
 	local enabled = false
-
 	toggle.MouseButton1Click:Connect(function()
 		enabled = not enabled
 		if enabled then
@@ -116,8 +108,6 @@ local function createCard(text)
 			}):Play()
 		end
 	end)
-
-	return card
 end
 
 createCard("Auto Ganho")
@@ -125,35 +115,32 @@ createCard("Luck Visual")
 createCard("Notificações")
 
 local dragging = false
-local dragStart, startPos
+local dragStart
+local startPos
 
 titleBar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
 		startPos = main.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
 	end
 end)
 
-titleBar.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		input.Changed:Connect(function()
-			if dragging then
-				local delta = input.Position - dragStart
-				main.Position = UDim2.new(
-					startPos.X.Scale,
-					startPos.X.Offset + delta.X,
-					startPos.Y.Scale,
-					startPos.Y.Offset + delta.Y
-				)
-			end
-		end)
+titleBar.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
 	end
 end)
 
